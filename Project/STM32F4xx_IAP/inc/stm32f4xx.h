@@ -131,7 +131,10 @@
 #define __MPU_PRESENT             1       /*!< STM32F4XX provides an MPU                     */
 #define __NVIC_PRIO_BITS          4       /*!< STM32F4XX uses 4 Bits for the Priority Levels */
 #define __Vendor_SysTickConfig    0       /*!< Set to 1 if different SysTick Config is used  */
-#define __FPU_PRESENT             1       /*!< FPU present                                   */
+
+#if !defined  (__FPU_PRESENT) 
+  #define __FPU_PRESENT             1       /*!< FPU present                                   */
+#endif /* __FPU_PRESENT */
 
 /**
  * @brief STM32F4XX Interrupt Number Definition, according to the selected device 

@@ -34,7 +34,8 @@
 #include "flash_if.h"
 #include "menu.h"
 #include "ymodem.h"
-
+#include <stdio.h>
+#include "fal.h"
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -64,7 +65,7 @@ void SerialDownload(void)
     SerialPutString("Waiting for the file to be sent ... (press 'a' to abort)\n\r");
     Size = Ymodem_Receive(&tab_1024[0]);
     if (Size > 0)
-    {
+    { 
         SerialPutString("\n\n\r Programming Completed Successfully!\n\r--------------------------------\r\n Name: ");
         SerialPutString(FileName);
         Int2Str(Number, Size);
@@ -130,11 +131,13 @@ void Main_Menu(void)
     uint8_t key = 0;
     uint8_t strtemp[12];
     RCC_ClocksTypeDef RCC_Clocks;
+    
+    fal_init();
     for (key = 0; key < 12; key++)
         strtemp[key] = 0;
     SystemCoreClockUpdate();
     Int2Str(strtemp, SystemCoreClock);
-    SerialPutString("            SystemCoreClock:");
+    printf("\r\n            SystemCoreClock:");
     SerialPutString(strtemp);
     SerialPutString("\r\n");
 
@@ -183,7 +186,7 @@ void Main_Menu(void)
             {
                 FlashProtection = 1;
             }
-            else
+            else 
             {
                 FlashProtection = 0;
             }
