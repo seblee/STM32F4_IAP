@@ -36,6 +36,7 @@
 #include "ymodem.h"
 #include <stdio.h>
 #include "fal.h"
+#include "operation.h"
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -65,7 +66,7 @@ void SerialDownload(void)
     SerialPutString("Waiting for the file to be sent ... (press 'a' to abort)\n\r");
     Size = Ymodem_Receive(&tab_1024[0]);
     if (Size > 0)
-    { 
+    {
         SerialPutString("\n\n\r Programming Completed Successfully!\n\r--------------------------------\r\n Name: ");
         SerialPutString(FileName);
         Int2Str(Number, Size);
@@ -109,15 +110,13 @@ void SerialUpload(void)
         status = Ymodem_Transmit((uint8_t *)APPLICATION_ADDRESS, (const uint8_t *)"UploadedFlashImage.bin", USER_FLASH_SIZE);
 
         if (status != 0)
-            if (status != 0)
-                if (status != 0)
-                {
-                    SerialPutString("\n\rError Occurred while Transmitting File\n\r");
-                }
-                else
-                {
-                    SerialPutString("\n\rFile uploaded successfully \n\r");
-                }
+        {
+            SerialPutString("\n\rError Occurred while Transmitting File\n\r");
+        }
+        else
+        {
+            SerialPutString("\n\rFile uploaded successfully \n\r");
+        }
     }
 }
 
@@ -129,46 +128,18 @@ void SerialUpload(void)
 void Main_Menu(void)
 {
     uint8_t key = 0;
-    uint8_t strtemp[12];
+    int rc;
     RCC_ClocksTypeDef RCC_Clocks;
-    
+
     fal_init();
-    for (key = 0; key < 12; key++)
-        strtemp[key] = 0;
     SystemCoreClockUpdate();
-    Int2Str(strtemp, SystemCoreClock);
-    printf("\r\n            SystemCoreClock:");
-    SerialPutString(strtemp);
-    SerialPutString("\r\n");
-
-    for (key = 0; key < 12; key++)
-        strtemp[key] = 0;
     RCC_GetClocksFreq(&RCC_Clocks);
-    Int2Str(strtemp, RCC_Clocks.SYSCLK_Frequency);
-    SerialPutString("RCC_Clocks.SYSCLK_Frequency:");
-    SerialPutString(strtemp);
-    SerialPutString("\r\n");
-
-    for (key = 0; key < 12; key++)
-        strtemp[key] = 0;
-    Int2Str(strtemp, RCC_Clocks.HCLK_Frequency);
-    SerialPutString("  RCC_Clocks.HCLK_Frequency:");
-    SerialPutString(strtemp);
-    SerialPutString("\r\n");
-
-    for (key = 0; key < 12; key++)
-        strtemp[key] = 0;
-    Int2Str(strtemp, RCC_Clocks.PCLK1_Frequency);
-    SerialPutString(" RCC_Clocks.PCLK1_Frequency:");
-    SerialPutString(strtemp);
-    SerialPutString("\r\n");
-
-    for (key = 0; key < 12; key++)
-        strtemp[key] = 0;
-    Int2Str(strtemp, RCC_Clocks.PCLK2_Frequency);
-    SerialPutString(" RCC_Clocks.PCLK2_Frequency:");
-    SerialPutString(strtemp);
-    SerialPutString("\r\n");
+    printf("\r\n");
+    printf("%-*.*s:%d\r\n", 27, 27, "SystemCoreClock", SystemCoreClock);
+    printf("%-*.*s:%d\r\n", 27, 27, "RCC_Clocks.SYSCLK_Frequency", RCC_Clocks.SYSCLK_Frequency);
+    printf("%-*.*s:%d\r\n", 27, 27, "RCC_Clocks.HCLK_Frequency", RCC_Clocks.HCLK_Frequency);
+    printf("%-*.*s:%d\r\n", 27, 27, "RCC_Clocks.PCLK1_Frequency", RCC_Clocks.PCLK1_Frequency);
+    printf("%-*.*s:%d\r\n", 27, 27, "RCC_Clocks.PCLK2_Frequency", RCC_Clocks.PCLK2_Frequency);
 
     SerialPutString("\r\n======================================================================");
     SerialPutString("\r\n=              (C) COPYRIGHT 2011 STMicroelectronics                 =");
@@ -181,32 +152,30 @@ void Main_Menu(void)
 
     /* Test if any sector of Flash memory where user application will be loaded is write protected */
     if (FLASH_If_GetWriteProtectionStatus() == 0)
-        if (FLASH_If_GetWriteProtectionStatus() == 0)
-            if (FLASH_If_GetWriteProtectionStatus() == 0)
-            {
-                FlashProtection = 1;
-            }
-            else 
-            {
-                FlashProtection = 0;
-            }
+        FlashProtection = 1;
+    else
+        FlashProtection = 0;
 
     while (1)
     {
-        SerialPutString("\r\n================== Main Menu ============================\r\n\n");
-        SerialPutString("  Download Image To the STM32F4xx Internal Flash ------- 1\r\n\n");
-        SerialPutString("  Upload Image From the STM32F4xx Internal Flash ------- 2\r\n\n");
-        SerialPutString("  Execute The New Program ------------------------------ 3\r\n\n");
-
+        SerialPutString("\r\n================== Main Menu ============================\r\n");
+        SerialPutString("  Download Image To the STM32F4xx Internal Flash ------ 1\r\n");
+        SerialPutString("  Upload Image From the STM32F4xx Internal Flash ------ 2\r\n");
+        SerialPutString("  Execute The New Program ----------------------------- 3\r\n");
         if (FlashProtection != 0)
         {
-            SerialPutString("  Disable the write protection ------------------------- 4\r\n\n");
+            SerialPutString("  Disable the write protection ------------------------ 4\r\n");
         }
+        SerialPutString("  Erase parameter partition --------------------------- 5\r\n");
+        SerialPutString("  Erase app partition --------------------------------- 6\r\n");
+        SerialPutString("  Erase download partition ---------------------------- 7\r\n");
+        SerialPutString("  copy app from download partition to app partition --- 8\r\n");
 
-        SerialPutString("==========================================================\r\n\n");
+        SerialPutString("=========================================================\r\n");
 
         /* Receive key */
         key = GetKey();
+        printf("key_value:0x%02x\r\n\n", key);
 
         if (key == 0x31)
         {
@@ -244,8 +213,54 @@ void Main_Menu(void)
                 break;
             }
             default:
-            {
+                break;
             }
+        }
+        else if (key == 0x35)
+        {
+            rc = Erase_partition("parameter");
+            if (rc <= 0)
+            {
+                log_e("Erase parameter err");
+            }
+            else
+            {
+                log_e("Erase parameter size:%d", rc);
+            }
+        }
+        else if (key == 0x36)
+        {
+            rc = Erase_partition("app");
+            if (rc <= 0)
+            {
+                log_e("Erase app err");
+            }
+            else
+            {
+                log_e("Erase app size:%d", rc);
+            }
+        }
+        else if (key == 0x37)
+        {
+            rc = Erase_partition("download");
+            if (rc <= 0)
+            {
+                log_e("Erase download err");
+            }
+            else
+            {
+                log_e("Erase download size:%d", rc);
+            }
+        }
+        else if (key == 0x38)
+        {
+            if (Copy_program() == 0)
+            {
+                log_e("Copy_program OK");
+            }
+            else
+            {
+                log_e("Copy_program err");
             }
         }
         else

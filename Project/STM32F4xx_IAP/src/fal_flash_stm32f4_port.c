@@ -182,9 +182,8 @@ static int erase(long offset, size_t size)
 
     /* start erase */
     FLASH_Unlock();
-    FLASH_ClearFlag(
-            FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR
-                    | FLASH_FLAG_PGSERR);
+    FLASH_ClearFlag(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | 
+                    FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
     /* it will stop when erased size is greater than setting size */
     while (erased_size < size)
     {
@@ -201,4 +200,4 @@ static int erase(long offset, size_t size)
     return size;
 }
 
-const struct fal_flash_dev stm32f4_onchip_flash = { "stm32_onchip", 0x08000000, 1024*1024, 128*1024, {init, read, write, erase} };
+const struct fal_flash_dev stm32f4_onchip_flash = { "stm32_onchip", FLASH_BASE, 1024*1024, 128*1024, {init, read, write, erase} };
