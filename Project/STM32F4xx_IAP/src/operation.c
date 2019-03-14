@@ -1,5 +1,6 @@
 #include "operation.h"
 #include "string.h"
+#include "crypto.h"
 #include "stm32f4xx.h"
 
 int Erase_partition(char *name)
@@ -58,6 +59,16 @@ int Copy_program(void)
         log_e("FLASH_APP_FLAG_WORD is correct");
         return -1;
     }
+    uint8_t md5[33] = {0};
+    _md5((uint8_t *)(app_info_p + sizeof(app_struct)), app_info_p->app_len, md5);
+    log_d("md5:%s", md5);
+
+    if (strncasecmp(&app_info_p->md5[0], (char *)md5, 32) != 0)
+    {
+        log_e("md5 err");
+        return -1;
+    }
+
     rc = Erase_partition("app");
     if (rc <= 0)
     {
@@ -73,4 +84,102 @@ int Copy_program(void)
     }
 
     return rc;
+}
+
+void _hmac_md5(const char *msg, int msg_len, char *digest, const char *key, int key_len)
+{
+    HMAC_MD5ctx_stt HMAC_MD5ctx_st;
+    uint32_t error_status = HASH_SUCCESS;
+
+    HMAC_MD5ctx_st.mFlags = E_HASH_DEFAULT;
+    HMAC_MD5ctx_st.mTagSize = CRL_MD5_SIZE;
+    log_d("msg:%s", msg);
+    log_d("key:%s", key);
+    Crypto_DeInit();
+    HMAC_MD5ctx_st.pmKey = (const uint8_t *)(key);
+    HMAC_MD5ctx_st.mKeySize = key_len;
+    error_status = HMAC_MD5_Init(&HMAC_MD5ctx_st);
+    /* check for initialization errors */
+    if (error_status == HASH_SUCCESS)
+    {
+        /* Add data to be hashed */
+        error_status = HMAC_MD5_Append(&HMAC_MD5ctx_st,
+                                       (const uint8_t *)msg,
+                                       strlen(msg));
+
+        if (error_status == HASH_SUCCESS)
+        {
+            int32_t P_pOutputSize;
+            int8_t OutputBuffer[16];
+            memset(digest, 0, 32);
+            /* retrieve */
+            error_status = HMAC_MD5_Finish(&HMAC_MD5ctx_st, (uint8_t *)OutputBuffer, &P_pOutputSize);
+            if (error_status == HASH_SUCCESS)
+            {
+                printf("\r\nOutputSize:%dmd5:", P_pOutputSize);
+                for (int i = 0; i < P_pOutputSize; i++)
+                {
+                    printf("%02x", OutputBuffer[i]);
+                    sprintf(digest + 2 * i, "%02x", OutputBuffer[i]);
+                }
+                printf("\r\n");
+                printf("digest:%s\r\n", digest);
+            }
+            else
+            {
+                log_e("HMAC_MD5_Append err:%d", error_status);
+            }
+        }
+        else
+        {
+            log_e("HMAC_MD5_Finish err:%d", error_status);
+        }
+    }
+    else
+    {
+        log_e("HMAC_MD5_Init err:%d", error_status);
+    }
+}
+void _md5(const unsigned char *input, size_t ilen, unsigned char output[32])
+{
+    MD5ctx_stt MD5ctx_st;
+    uint32_t error_status = HASH_SUCCESS;
+
+    MD5ctx_st.mFlags = E_HASH_DEFAULT;
+    MD5ctx_st.mTagSize = CRL_MD5_SIZE;
+    Crypto_DeInit();
+    error_status = MD5_Init(&MD5ctx_st);
+    if (error_status == HASH_SUCCESS)
+    {
+        error_status = MD5_Append(&MD5ctx_st, input, ilen);
+        if (error_status == HASH_SUCCESS)
+        {
+            int32_t P_pOutputSize;
+            uint8_t OutputBuffer[16];
+            error_status = MD5_Finish(&MD5ctx_st, OutputBuffer, &P_pOutputSize);
+            if (error_status == HASH_SUCCESS)
+            {
+                printf("\r\nOutputSize:%dmd5:", P_pOutputSize);
+                for (int i = 0; i < P_pOutputSize; i++)
+                {
+                    printf("%02x", OutputBuffer[i]);
+                    sprintf((char *)(output + 2 * i), "%02x", OutputBuffer[i]);
+                }
+                printf("\r\n");
+                printf("%s\r\n", output);
+            }
+            else
+            {
+                log_e("MD5_Finish err:%d", error_status);
+            }
+        }
+        else
+        {
+            log_e("MD5_Append err:%d", error_status);
+        }
+    }
+    else
+    {
+        log_e("MD5_Init err:%d", error_status);
+    }
 }

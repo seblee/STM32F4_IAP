@@ -17,4 +17,7 @@ int Erase_partition(char *name);
 int Copy_program(void);
 typedef app_struct *app_struct_t;
 
+void _hmac_md5(const char *msg, int msg_len, char *digest, const char *key, int key_len);
+void _md5(const unsigned char *input, size_t ilen, unsigned char output[32]);
+
 #endif /* _OPERATION_H_ */

@@ -52,7 +52,7 @@
   */
 //#define CORTEX_M0 /*!< Library is compiled for Cortex M0 */
 //#define CORTEX_M3 /*!< Library is compiled for Cortex M3 */
-//#define CORTEX_M4 /*!< Library is compiled for Cortex M4 */
+#define CORTEX_M4 /*!< Library is compiled for Cortex M4 */
 /**
   * @}
   */ 
@@ -157,11 +157,11 @@
   * @{
   */
 
-//#define INCLUDE_MD5     /*!< This defines if MD5 functions are included in the library */
+#define INCLUDE_MD5     /*!< This defines if MD5 functions are included in the library */
 //#define INCLUDE_SHA1    /*!< This defines if SHA-1 functions are included in the library */
 //#define INCLUDE_SHA224  /*!< This defines if SHA-224 functions are included in the library */
-#define INCLUDE_SHA256  /*!< This defines if SHA-256 functions are included in the library */
-//#define INCLUDE_HMAC    /*!< Select if, for the selected hash algorithms, HMAC should be included in the library */
+//#define INCLUDE_SHA256  /*!< This defines if SHA-256 functions are included in the library */
+#define INCLUDE_HMAC    /*!< Select if, for the selected hash algorithms, HMAC should be included in the library */
  /**
   * @}
   */ 
