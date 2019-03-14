@@ -55,7 +55,7 @@ int Copy_program(void)
 
     if (app_info_p->app_flag != FLASH_APP_FLAG_WORD)
     {
-        log_e("FLASH_APP_FLAG_WORD is not right");
+        log_e("FLASH_APP_FLAG_WORD is correct");
         return -1;
     }
     rc = Erase_partition("app");
@@ -68,9 +68,9 @@ int Copy_program(void)
     rc = fal_partition_write(app_partition, 0, (uint8_t *)(app_info_p + sizeof(app_struct)), app_info_p->app_len);
     if (rc < 0)
     {
-        log_e("connot find the part download_partition");
+        log_e("partition_write failed");
         return -1;
     }
-    rc = 0;
+
     return rc;
 }

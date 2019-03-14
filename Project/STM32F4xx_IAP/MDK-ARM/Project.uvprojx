@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STM324xG_EVAL, STM32F4XX, USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\inc;..\..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\..\Utilities\STM32_EVAL\Common;..\..\..\Utilities\STM32_EVAL\STM3240_41_G_EVAL;..\fal\inc</IncludePath>
+              <IncludePath>..\inc;..\..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\..\Utilities\STM32_EVAL\Common;..\..\..\Utilities\STM32_EVAL\STM3240_41_G_EVAL;..\fal\inc;..\..\..\Libraries\STM32_Cryptographic_Library\inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -631,6 +631,16 @@
               <FileName>fal_partition.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\fal\src\fal_partition.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Crypto</GroupName>
+          <Files>
+            <File>
+              <FileName>M4_CryptoFW_RngHW_2_0_6.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>..\..\..\Libraries\STM32_Cryptographic_Library\binary\MK-ARM\M4_CryptoFW_RngHW_2_0_6.lib</FilePath>
             </File>
           </Files>
         </Group>

@@ -225,7 +225,7 @@ void Main_Menu(void)
             }
             else
             {
-                log_e("Erase parameter size:%d", rc);
+                log_i("Erase parameter size:%d", rc);
             }
         }
         else if (key == 0x36)
@@ -237,7 +237,7 @@ void Main_Menu(void)
             }
             else
             {
-                log_e("Erase app size:%d", rc);
+                log_i("Erase app size:%d", rc);
             }
         }
         else if (key == 0x37)
@@ -249,18 +249,18 @@ void Main_Menu(void)
             }
             else
             {
-                log_e("Erase download size:%d", rc);
+                log_i("Erase download size:%d", rc);
             }
         }
         else if (key == 0x38)
         {
-            if (Copy_program() == 0)
+            if (Copy_program() < 0)
             {
-                log_e("Copy_program OK");
+                log_e("Copy_program err");
             }
             else
             {
-                log_e("Copy_program err");
+                log_i("Copy_program OK");
             }
         }
         else
