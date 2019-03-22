@@ -103,9 +103,7 @@ void _hmac_md5(const char *msg, int msg_len, char *digest, const char *key, int 
     if (error_status == HASH_SUCCESS)
     {
         /* Add data to be hashed */
-        error_status = HMAC_MD5_Append(&HMAC_MD5ctx_st,
-                                       (const uint8_t *)msg,
-                                       strlen(msg));
+        error_status = HMAC_MD5_Append(&HMAC_MD5ctx_st, (const uint8_t *)msg, strlen(msg));
 
         if (error_status == HASH_SUCCESS)
         {
