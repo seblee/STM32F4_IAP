@@ -26,6 +26,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "menu.h"
 #include "stm324xg_eval.h"
+#include "operation.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -35,7 +36,7 @@ extern pFunction Jump_To_Application;
 extern uint32_t JumpAddress;
 
 /* Private function prototypes -----------------------------------------------*/
-static void IAP_Init(void);
+void IAP_Init(void);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -53,11 +54,11 @@ int main(void)
     STM_EVAL_PBInit(BUTTON_KEY, BUTTON_MODE_GPIO);
 
     /* Test if Key push-button on STM324xG-EVAL Board is pressed */
-    if (1 /*STM_EVAL_PBGetState(BUTTON_KEY) == 0x00*/)
+    if (isthereOTAflag() /* STM_EVAL_PBGetState(BUTTON_KEY) == 0x00*/)
     {
         /* Execute the IAP driver in order to reprogram the Flash */
         IAP_Init();
-        /* Display main menu */
+              /* Display main menu */
         Main_Menu();
     }
     /* Keep the user application running */

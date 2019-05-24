@@ -130,8 +130,6 @@ void Main_Menu(void)
     uint8_t key = 0;
     int rc;
     RCC_ClocksTypeDef RCC_Clocks;
-
-    fal_init();
     SystemCoreClockUpdate();
     RCC_GetClocksFreq(&RCC_Clocks);
     printf("\r\n");
@@ -172,9 +170,10 @@ void Main_Menu(void)
         SerialPutString("  copy app from download partition to app partition --- 8\r\n");
 
         SerialPutString("=========================================================\r\n");
-
-        /* Receive key */
-        key = GetKey();
+        if(isthereOTAflag())
+            key = 0x38;
+        else            
+            key = GetKey();/* Receive key */
         printf("key_value:0x%02x\r\n\n", key);
 
         if (key == 0x31)
@@ -261,6 +260,12 @@ void Main_Menu(void)
             else
             {
                 log_i("Copy_program OK");
+                JumpAddress = *(__IO uint32_t *)(APPLICATION_ADDRESS + 4);
+                /* Jump to user application */
+                Jump_To_Application = (pFunction)JumpAddress;
+                /* Initialize user application's Stack Pointer */
+                __set_MSP(*(__IO uint32_t *)APPLICATION_ADDRESS);
+                Jump_To_Application();
             }
         }
         else
