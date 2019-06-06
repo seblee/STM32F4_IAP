@@ -56,9 +56,9 @@
   *-----------------------------------------------------------------------------
   *        APB2 Prescaler                         | 2
   *-----------------------------------------------------------------------------
-  *        HSE Frequency(Hz)                      | 25000000
+  *        HSE Frequency(Hz)                      | 8000000
   *-----------------------------------------------------------------------------
-  *        PLL_M                                  | 25
+  *        PLL_M                                  | 8
   *-----------------------------------------------------------------------------
   *        PLL_N                                  | 336
   *-----------------------------------------------------------------------------
@@ -146,7 +146,7 @@
 
 /************************* PLL Parameters *************************************/
 /* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
-#define PLL_M      25
+#define PLL_M      8
 #define PLL_N      336
 
 /* SYSCLK = PLL_VCO / PLL_P */
@@ -186,6 +186,7 @@
   */
 
 static void SetSysClock(void);
+static void SetSysClock_HSI(void);
 #ifdef DATA_IN_ExtSRAM
   static void SystemInit_ExtMemCtl(void); 
 #endif /* DATA_IN_ExtSRAM */
@@ -237,8 +238,8 @@ void SystemInit(void)
          
   /* Configure the System clock source, PLL Multiplier and Divider factors, 
      AHB/APBx prescalers and Flash settings ----------------------------------*/
-  SetSysClock();
-
+ //   SetSysClock();
+ SetSysClock_HSI();
   /* Configure the Vector Table location add offset address ------------------*/
 #ifdef VECT_TAB_SRAM
   SCB->VTOR = SRAM_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
@@ -383,6 +384,94 @@ static void SetSysClock(void)
     /* Configure the main PLL */
     RCC->PLLCFGR = PLL_M | (PLL_N << 6) | (((PLL_P >> 1) -1) << 16) |
                    (RCC_PLLCFGR_PLLSRC_HSE) | (PLL_Q << 24);
+
+    /* Enable the main PLL */
+    RCC->CR |= RCC_CR_PLLON;
+
+    /* Wait till the main PLL is ready */
+    while((RCC->CR & RCC_CR_PLLRDY) == 0)
+    {
+    }
+   
+    /* Configure Flash prefetch, Instruction cache, Data cache and wait state */
+    FLASH->ACR = FLASH_ACR_ICEN |FLASH_ACR_DCEN |FLASH_ACR_LATENCY_5WS;
+
+    /* Select the main PLL as system clock source */
+    RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_SW));
+    RCC->CFGR |= RCC_CFGR_SW_PLL;
+
+    /* Wait till the main PLL is used as system clock source */
+    while ((RCC->CFGR & (uint32_t)RCC_CFGR_SWS ) != RCC_CFGR_SWS_PLL);
+    {
+    }
+  }
+  else
+  { /* If HSE fails to start-up, the application will have wrong clock
+         configuration. User can add here some code to deal with this error */
+    SetSysClock_HSI();
+  }
+
+}
+
+/**
+  * @brief  Configures the System clock source, PLL Multiplier and Divider factors, 
+  *         AHB/APBx prescalers and Flash settings
+  * @Note   This function should be called only once the RCC clock configuration  
+  *         is reset to the default reset state (done in SystemInit() function).   
+  * @param  None
+  * @retval None
+  */
+static void SetSysClock_HSI(void)
+{
+/* PLL_VCO = (HSE_VALUE or HSI_VALUE / PLL_M) * PLL_N */
+#define PLL_M_HSI      16
+#define PLL_N_HSI      336
+/* SYSCLK = PLL_VCO / PLL_P */
+#define PLL_P_HSI      2
+/* USB OTG FS, SDIO and RNG Clock =  PLL_VCO / PLLQ */
+#define PLL_Q_HSI      7
+/******************************************************************************/
+/*            PLL (clocked by HSI) used as System clock source                */
+/******************************************************************************/
+  __IO uint32_t StartUpCounter = 0, HSIStatus = 0;
+  
+  /* Enable HSE */
+  RCC->CR |= ((uint32_t)RCC_CR_HSION);
+ 
+  /* Wait till HSE is ready and if Time out is reached exit */
+  do
+  {
+    HSIStatus = RCC->CR & RCC_CR_HSIRDY;
+    StartUpCounter++;
+  } while((HSIStatus == 0) && (StartUpCounter != HSE_STARTUP_TIMEOUT));
+
+  if ((RCC->CR & RCC_CR_HSIRDY) != RESET)
+  {
+    HSIStatus = (uint32_t)0x01;
+  }
+  else
+  {
+    HSIStatus = (uint32_t)0x00;
+  }
+
+  if (HSIStatus == (uint32_t)0x01)
+  {
+    /* Select regulator voltage output Scale 1 mode, System frequency up to 168 MHz */
+    RCC->APB1ENR |= RCC_APB1ENR_PWREN;
+    PWR->CR |= PWR_CR_VOS;
+
+    /* HCLK = SYSCLK / 1*/
+    RCC->CFGR |= RCC_CFGR_HPRE_DIV1;
+      
+    /* PCLK2 = HCLK / 2*/
+    RCC->CFGR |= RCC_CFGR_PPRE2_DIV2;
+    
+    /* PCLK1 = HCLK / 4*/
+    RCC->CFGR |= RCC_CFGR_PPRE1_DIV4;
+
+    /* Configure the main PLL */
+    RCC->PLLCFGR = PLL_M_HSI | (PLL_N_HSI << 6) | (((PLL_P_HSI >> 1) -1) << 16) |
+                   (RCC_PLLCFGR_PLLSRC_HSI) | (PLL_Q_HSI << 24);
 
     /* Enable the main PLL */
     RCC->CR |= RCC_CR_PLLON;

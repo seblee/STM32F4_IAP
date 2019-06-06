@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "fal.h": "c",
+        "fal_def.h": "c",
+        "fal_cfg.h": "c"
+    }
+}
